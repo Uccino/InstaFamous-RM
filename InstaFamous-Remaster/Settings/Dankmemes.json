@@ -1,0 +1,12 @@
+{
+  "Reddit": {
+    "Subreddit": "Dankmemes",
+    "UpvoteRequirement": "5000"
+  },
+  "Instagram": {
+    "Username": "Username",
+    "Password": "Password",
+    "Tags": "Tags"
+  }
+
+}
