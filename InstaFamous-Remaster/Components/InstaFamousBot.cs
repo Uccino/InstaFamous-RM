@@ -1,15 +1,14 @@
 ﻿using System;
+using System.IO;
 using InstaFamous.Components.Instagram;
 using InstaFamous.Components.Reddit;
 using InstaFamous.Components.Settings;
 using InstaFamous.Components.FileHandler;
 
-
 namespace InstaFamous.Components
 {
     class InstaFamousBot
     {
-
         public string BotName { get; private set; }
         public int ImagesUploaded { get; private set; }
         public int ImagesDownloaded { get; private set; }
@@ -24,11 +23,20 @@ namespace InstaFamous.Components
 
                 BotName = botSettings.Subreddit + " | " + botSettings.InstagramUsername;
 
+                InstaFamousLogger.LogMessage($"Set up bot for ${BotName}",
+                    InstaFamousLogger.LogLevel.INFO,
+                    BotName);
+
                 return botSettings;
+
             }
             catch (Exception ex)
             {
-                throw ex;
+                InstaFamousLogger.LogMessage($"Unable to setup bot for: ${BotName}" +
+                                             $" {Environment.NewLine}" +
+                                             $" {ex.Message}",
+                    InstaFamousLogger.LogLevel.WARNING, BotName);
+                return null;
             }
         }
 
@@ -41,9 +49,9 @@ namespace InstaFamous.Components
 
             // Attempt to create a new directory
             string directoryName = settings.Subreddit;
-            
+
             var fileClient = new FileManager(directoryName);
-            
+
             if (!fileClient.Setup())
             {
                 // Main bot loop
@@ -51,9 +59,10 @@ namespace InstaFamous.Components
                 {
                     // Here we download all the reddit images and prepare them for uploading
 
-                    // Create new instance of reddit and instagram class
+                    // Create new instance of reddit class
                     var redditClient = getRedditClient(botSettings);
-                    
+
+                    InstaFamousLogger.LogMessage("Downloading new reddit posts", InstaFamousLogger.LogLevel.INFO, BotName);
                     // Try to get the new reddit post
                     var redditPosts = redditClient.GetPosts();
 
@@ -67,10 +76,10 @@ namespace InstaFamous.Components
                         }
                         catch (Exception ex)
                         {
-                            // Log the error to the console
-                            Console.WriteLine($"Unable to download {post.Title}, {post.Url}" +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
+                            InstaFamousLogger.LogMessage($"Unable to download {post.Url} " +
+                                                         $"{Environment.NewLine}" +
+                                                         $" {ex.Message}",
+                                InstaFamousLogger.LogLevel.WARNING, BotName);
                         }
                     }
 
@@ -84,10 +93,10 @@ namespace InstaFamous.Components
                         }
                         catch (Exception ex)
                         {
-                            // Log the error to the console
-                            Console.WriteLine($"Unable to convert picture format: {file}." +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
+                            InstaFamousLogger.LogMessage($"Unable to change the picture format of {file} " +
+                                                         $"{Environment.NewLine}" +
+                                                         $" {ex.Message}",
+                                InstaFamousLogger.LogLevel.WARNING, BotName);
                         }
 
                         // Remove the old file
@@ -102,7 +111,7 @@ namespace InstaFamous.Components
                     {
                         try
                         {
-                            fileClient.PrepareImages(filePaths);
+                            fileClient.PrepareImage(file);
                         }
                         catch (Exception ex)
                         {
@@ -115,13 +124,69 @@ namespace InstaFamous.Components
 
                     // Here we upload the images to instagram.
 
+                    // Get new instagram class instance
                     var instagramClient = getInstagramClient(botSettings);
 
-                    if (instagramClient.Login())
+                    //// Loop through the images and upload them one by one
+                    var instagramFiles = fileClient.GetImageList();
+                    foreach (var filePath in instagramFiles)
                     {
+                        // Attempt to login
+                        try
+                        {
+                            instagramClient.Login();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Unable to login to instagram account {botSettings.InstagramUsername}" +
+                                              $" {Environment.NewLine}" +
+                                              $" {ex.Message}");
+                        }
+                        // Attempt to upload the image to instagram.
+                        try
+                        {
+                            instagramClient.PostImage(filePath);
+                            Console.WriteLine($"Successfully uploaded {filePath}" +
+                                              $" {Environment.NewLine}");
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Unable to upload {filePath}" +
+                                              $" {Environment.NewLine}" +
+                                              $" {ex.Message}");
 
+                        }
+
+                        // Attempt to logout
+                        try
+                        {
+                            instagramClient.Logout();
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Unable to logout to instagram account {botSettings.InstagramUsername}" +
+                                              $" {Environment.NewLine}" +
+                                              $" {ex.Message}");
+                        }
+
+                        System.Threading.Thread.Sleep(216 * 100000);
                     }
 
+                    // Clean up the directory of images
+                    var images = Directory.EnumerateFiles(directoryName);
+                    foreach (var image in images)
+                    {
+                        try
+                        {
+                            File.Delete(image);
+                        }
+                        catch (Exception ex)
+                        {
+                            Console.WriteLine($"Unable to delete file {image}" +
+                                              $" {Environment.NewLine}" +
+                                              $" {ex.Message}");
+                        }
+                    }
                 }
             }
         }

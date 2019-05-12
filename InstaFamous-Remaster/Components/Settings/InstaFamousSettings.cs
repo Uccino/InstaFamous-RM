@@ -49,7 +49,8 @@ namespace InstaFamous.Components.Settings
 
             // Reddit settings
             string subreddit = jsonSettings["Reddit"]["Subreddit"];
-            if (!int.TryParse(jsonSettings["Reddit"]["UpvoteRequirement"], out int upvoteRequirement))
+            string upvotes = jsonSettings["Reddit"]["UpvoteRequirement"];
+            if (!int.TryParse(upvotes, out var upvoteRequirement))
             {
                 throw new Exception("Unable set the upvote requirement.");
             }

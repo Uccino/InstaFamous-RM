@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace InstaFamous.Components.Reddit
@@ -38,7 +39,8 @@ namespace InstaFamous.Components.Reddit
         /// <returns></returns>
         private string RegexTitle(string inputTitle)
         {
-            return null;
+            inputTitle = Regex.Replace(inputTitle, "[^0-9a-zA-Z ]+", "");
+            return inputTitle;
         }
 
     }

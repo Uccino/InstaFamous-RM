@@ -8,7 +8,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using ImageMagick;
-using InstaSharper.Classes.Models;
 
 namespace InstaFamous.Components.FileHandler
 {
@@ -66,22 +65,21 @@ namespace InstaFamous.Components.FileHandler
         /// Removes the EXIf data, adds padding and resizes the image to 1080
         /// </summary>
         /// <param name="filePaths"></param>
-        public void PrepareImages(List<string> filePaths)
+        public void PrepareImage(string filePath)
         {
-            foreach (var filePath in filePaths)
-            {
-                RemoveExif(filePath);
-                AddImagePadding(filePath);
-                using (var img = Image.FromFile(filePath))
-                {
-                    if (img.Width > 1080 || img.Height > 1080)
-                    {
-                        ResizeImage(filePath);
-                    }
 
-                    img.Dispose();
+            
+            AddImagePadding(filePath);
+            using (var img = Image.FromFile(filePath))
+            {
+                if (img.Width > 1080 || img.Height > 1080)
+                {
+                    ResizeImage(filePath);
                 }
+
+                img.Dispose();
             }
+            RemoveExif(filePath);
         }
 
         /// <summary>
@@ -102,8 +100,8 @@ namespace InstaFamous.Components.FileHandler
                 using (var pngImage = Image.FromFile(filePath))
                 {
                     pngImage.Save(jpgFilePath, ImageFormat.Jpeg);
+                    pngImage.Dispose();
                 }
-
 
                 return true;
             }
@@ -145,7 +143,7 @@ namespace InstaFamous.Components.FileHandler
                 using (var graphics = Graphics.FromImage(squareImage))
                 {
                     // Fill the image with a white background
-                    graphics.FillRectangle(Brushes.White, 0,0, largestDimension, largestDimension);
+                    graphics.FillRectangle(Brushes.White, 0, 0, largestDimension, largestDimension);
                     // Set the image to have only the highest of qualities
                     graphics.CompositingQuality = System.Drawing.Drawing2D.CompositingQuality.HighQuality;
                     graphics.InterpolationMode = System.Drawing.Drawing2D.InterpolationMode.HighQualityBicubic;
@@ -155,7 +153,7 @@ namespace InstaFamous.Components.FileHandler
 
                     graphics.Dispose();
                 }
-                    
+
                 originalImage.Dispose();
                 // Delete the old image and save the new one
                 File.Delete(filePath);
@@ -194,8 +192,8 @@ namespace InstaFamous.Components.FileHandler
                     graphics.Dispose();
                 }
                 img.Dispose();
-                File.Delete(filePath);
-                destinationImg.Save(filePath, ImageFormat.Jpeg);
+                //File.Delete(filePath);
+                //destinationImg.Save(filePath, ImageFormat.Jpeg);
             }
         }
     }

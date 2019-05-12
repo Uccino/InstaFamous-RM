@@ -31,25 +31,28 @@ namespace InstaFamous.Components.Reddit
             var redditSubmissions = RequestSubmissions();
 
             // Create a new list of Post classes 
-            List<Post> postList = new List<Post>(25);
+            var postList = new List<Post>(25);
             // Loop through all of the submissions in the JSON 
             foreach (var post in redditSubmissions)
             {
-                // Create a new post instance
-                var redditPost = new Post
-                {
-                    // Set the variables
-                    Score = int.Parse(post["data"]["ups"]),
-                    Title = post["data"]["title"],
-                    Url =  post["data"]["url"]
-                };
+                var postTitle = post["data"]["title"].ToString();
+                var postScore = post["data"]["ups"].ToString();
+                var postUrl = post["data"]["url"].ToString();
 
+                // Create a new post instance
+                var redditPost = new Post();
+                redditPost.Title = postTitle;
+                redditPost.Score = int.Parse(postScore);
+                redditPost.Url = postUrl;
+                
                 // Add it to the list
                 postList.Add(redditPost);
             }
 
             // Filter all of the posts and return it
             var filteredPosts = FilterPosts(postList);
+            // Sort the list by amount of upvotes.
+            filteredPosts = filteredPosts.OrderBy(p => p.Score).Reverse().Take(6).ToList();
             return filteredPosts;
         }
 
@@ -148,7 +151,7 @@ namespace InstaFamous.Components.Reddit
             foreach (var post in redditPosts)
             {
                 // Only add the posts that have a certain amount of upvotes
-                if (post.Score >= UpvoteThreshold)
+                if (post.Score >= UpvoteThreshold || (post.Url.Contains(".png") || post.Url.Contains(".jpg")))
                 {
                     filteredList.Add(post);
                 }

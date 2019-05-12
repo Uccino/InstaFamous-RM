@@ -21,11 +21,6 @@ namespace InstaFamous
             {
                 ifBot.Run(botSettings);
             }
-            else
-            {
-                Console.WriteLine("Unable to start the bot for " + filePath);
-            }
-            
         }
     }
 }
