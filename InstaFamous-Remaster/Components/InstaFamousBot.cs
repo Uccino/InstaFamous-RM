@@ -57,77 +57,23 @@ namespace InstaFamous.Components
                 // Main bot loop
                 while (true)
                 {
-                    // Here we download all the reddit images and prepare them for uploading
-
                     // Create new instance of reddit class
-                    var redditClient = getRedditClient(botSettings);
-
-                    InstaFamousLogger.LogMessage("Downloading new reddit posts", InstaFamousLogger.LogLevel.INFO, BotName);
+                    var redditClient = GetRedditClient(botSettings);
+                    var instagramClient = GetInstagramClient(botSettings);
+                    
                     // Try to get the new reddit post
                     var redditPosts = redditClient.GetPosts();
-
-                    // Loop over the list and download the reddit posts
-                    foreach (var post in redditPosts)
-                    {
-                        try
-                        {
-                            redditClient.DownloadPost(post, directoryName);
-                            ImagesDownloaded += 1;
-                        }
-                        catch (Exception ex)
-                        {
-                            InstaFamousLogger.LogMessage($"Unable to download {post.Url} " +
-                                                         $"{Environment.NewLine}" +
-                                                         $" {ex.Message}",
-                                InstaFamousLogger.LogLevel.WARNING, BotName);
-                        }
-                    }
+                    redditPosts.ForEach(post => { DownloadFile(redditClient, post, directoryName); });
 
                     // Get all of the items in the directory and convert the file types to jpg
                     var pngFilePaths = fileClient.GetPngImages();
-                    foreach (var file in pngFilePaths)
-                    {
-                        try
-                        {
-                            fileClient.ChangePictureFormat(file);
-                        }
-                        catch (Exception ex)
-                        {
-                            InstaFamousLogger.LogMessage($"Unable to change the picture format of {file} " +
-                                                         $"{Environment.NewLine}" +
-                                                         $" {ex.Message}",
-                                InstaFamousLogger.LogLevel.WARNING, BotName);
-                        }
-
-                        // Remove the old file
-                        System.IO.File.Delete(file);
-                    }
-
+                    pngFilePaths.ForEach(file => { ChangePictureFormat(fileClient, file); });
+                   
                     // Prepare the images for uploading
-                    // Remove EXIF
-                    // Resize images and add padding.
                     var filePaths = fileClient.GetImageList();
-                    foreach (var file in filePaths)
-                    {
-                        try
-                        {
-                            fileClient.PrepareImage(file);
-                        }
-                        catch (Exception ex)
-                        {
-                            // Log the error to the console
-                            Console.WriteLine($"Unable to prepare image: {file}" +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
-                        }
-                    }
-
-                    // Here we upload the images to instagram.
-
-                    // Get new instagram class instance
-                    var instagramClient = getInstagramClient(botSettings);
-
-                    //// Loop through the images and upload them one by one
+                    filePaths.ForEach(file => { PrepareImage(fileClient, file); });
+                    
+                    // Loop through the images and upload them one by one
                     var instagramFiles = fileClient.GetImageList();
                     foreach (var filePath in instagramFiles)
                     {
@@ -173,30 +119,20 @@ namespace InstaFamous.Components
                     }
 
                     // Clean up the directory of images
-                    var images = Directory.EnumerateFiles(directoryName);
-                    foreach (var image in images)
-                    {
-                        try
-                        {
-                            File.Delete(image);
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Unable to delete file {image}" +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
-                        }
-                    }
+                    EmptyDirectory(directoryName);
                 }
             }
         }
+
+        
+
 
         /// <summary>
         /// Creates a new instance of the reddit client class
         /// </summary>
         /// <param name="redditSettings"></param>
         /// <returns></returns>
-        private RedditClient getRedditClient(BotSettings redditSettings)
+        private RedditClient GetRedditClient(BotSettings redditSettings)
         {
             // Get the settings
             var subreddit = redditSettings.Subreddit;
@@ -213,7 +149,7 @@ namespace InstaFamous.Components
         /// </summary>
         /// <param name="instagramSettings"></param>
         /// <returns></returns>
-        private InstagramClient getInstagramClient(BotSettings instagramSettings)
+        private InstagramClient GetInstagramClient(BotSettings instagramSettings)
         {
             // Get the settings
             var igUsername = instagramSettings.InstagramUsername;
@@ -224,6 +160,89 @@ namespace InstaFamous.Components
             var igClient = new InstagramClient(igUsername, igPassword, igTags);
 
             return igClient;
+        }
+
+        /// <summary>
+        /// Attempts to download the reddit post
+        /// </summary>
+        /// <param name="redditClient"></param>
+        /// <param name="redditPost"></param>
+        /// <param name="downloadDirectory"></param>
+        private void DownloadFile(RedditClient redditClient, Post redditPost, string downloadDirectory)
+        {
+            try
+            {
+                // Attempt to download the message
+                redditClient.DownloadPost(redditPost, downloadDirectory);
+            }
+            catch (Exception ex)
+            {
+                InstaFamousLogger.LogMessage($"Unable to download {redditPost.Url} " +
+                                             $"{Environment.NewLine}" +
+                                             $" {ex.Message}",
+                    InstaFamousLogger.LogLevel.WARNING, BotName);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to change the picture format of a PNG file
+        /// </summary>
+        /// <param name="fileClient"></param>
+        /// <param name="file"></param>
+        private void ChangePictureFormat(FileManager fileClient, string file)
+        {
+            try
+            {
+
+                fileClient.ChangePictureFormat(file);
+                File.Delete(file);
+
+            }
+            catch (Exception ex)
+            {
+                InstaFamousLogger.LogMessage($"Unable to change the picture format of {file} " +
+                                             $"{Environment.NewLine}" +
+                                             $" {ex.Message}",
+                    InstaFamousLogger.LogLevel.WARNING, BotName);
+            }
+        }
+
+        /// <summary>
+        /// Attempts to prepare the image for uploading
+        /// </summary>
+        /// <param name="fileClient"></param>
+        /// <param name="file"></param>
+        private void PrepareImage(FileManager fileClient, string file)
+        {
+            try
+            {
+                fileClient.PrepareImage(file);
+            }
+            catch (Exception ex)
+            {
+                // Log the error to the console
+                Console.WriteLine($"Unable to prepare image: {file}" +
+                                  $" {Environment.NewLine}" +
+                                  $" {ex.Message}");
+            }
+        }
+
+        private void EmptyDirectory(string directoryName)
+        {
+            var images = Directory.EnumerateFiles(directoryName);
+            foreach (var image in images)
+            {
+                try
+                {
+                    File.Delete(image);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Unable to delete file {image}" +
+                                      $" {Environment.NewLine}" +
+                                      $" {ex.Message}");
+                }
+            }
         }
     }
 }
