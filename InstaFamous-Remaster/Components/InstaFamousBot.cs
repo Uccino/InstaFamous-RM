@@ -12,14 +12,40 @@ namespace InstaFamous.Components
         public string BotName { get; private set; }
         public int ImagesUploaded { get; private set; }
         public int ImagesDownloaded { get; private set; }
-        
-        public BotSettings Setup(string settingsPath)
+
+        /// <summary>
+        /// This function is used to start the bot
+        /// </summary>
+        /// <param name="settingsPath">Path to the settings.json</param>
+        public void Start(string settingsPath)
+        {
+            var settings = Setup(settingsPath);
+            if (settings != null)
+            {
+                Run(settings);
+            }
+            else
+            {
+                InstaFamousLogger.LogMessage($"Unable to setup bot for: {settingsPath}",
+                    InstaFamousLogger.LogLevel.WARNING, 
+                    BotName);
+            }
+        }
+
+        /// <summary>
+        /// Sets the settings needed for the bot and returns a settings class
+        /// </summary>
+        /// <param name="settingsPath"></param>
+        /// <returns></returns>
+        private BotSettings Setup(string settingsPath)
         {
             try
             {
+                // Attempt to load the settings
                 var settingsManager = new InstaFamousSettings(settingsPath);
                 var botSettings = settingsManager.LoadSettings();
 
+                // Set the botname
                 BotName = botSettings.Subreddit + " | " + botSettings.InstagramUsername;
 
                 InstaFamousLogger.LogMessage($"Set up bot for ${BotName}",
@@ -38,8 +64,12 @@ namespace InstaFamous.Components
                 return null;
             }
         }
-
-        public void Run(BotSettings settings)
+        
+        /// <summary>
+        /// This is the main bot loop
+        /// </summary>
+        /// <param name="settings"></param>
+        private void Run(BotSettings settings)
         {
             ImagesDownloaded = 0;
             ImagesUploaded = 0;
@@ -118,8 +148,6 @@ namespace InstaFamous.Components
                 }
             }
         }
-
-        
 
 
         /// <summary>
