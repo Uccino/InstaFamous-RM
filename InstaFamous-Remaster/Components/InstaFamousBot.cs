@@ -12,8 +12,7 @@ namespace InstaFamous.Components
         public string BotName { get; private set; }
         public int ImagesUploaded { get; private set; }
         public int ImagesDownloaded { get; private set; }
-
-
+        
         public BotSettings Setup(string settingsPath)
         {
             try
@@ -52,7 +51,7 @@ namespace InstaFamous.Components
 
             var fileClient = new FileManager(directoryName);
 
-            if (!fileClient.Setup())
+            if (fileClient.Setup())
             {
                 // Main bot loop
                 while (true)
@@ -80,8 +79,6 @@ namespace InstaFamous.Components
                         // Login to instagram
                         if (LoginInstagram(instagramClient))
                         {
-                            
-
                             // Attempt to upload the image to instagram.
                             try
                             {
