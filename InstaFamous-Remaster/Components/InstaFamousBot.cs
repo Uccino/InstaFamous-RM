@@ -77,32 +77,26 @@ namespace InstaFamous.Components
                     var instagramFiles = fileClient.GetImageList();
                     foreach (var filePath in instagramFiles)
                     {
-                        // Attempt to login
-                        try
+                        // Login to instagram
+                        if (LoginInstagram(instagramClient))
                         {
-                            instagramClient.Login();
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Unable to login to instagram account {botSettings.InstagramUsername}" +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
-                        }
-                        // Attempt to upload the image to instagram.
-                        try
-                        {
-                            instagramClient.PostImage(filePath);
-                            Console.WriteLine($"Successfully uploaded {filePath}" +
-                                              $" {Environment.NewLine}");
-                        }
-                        catch (Exception ex)
-                        {
-                            Console.WriteLine($"Unable to upload {filePath}" +
-                                              $" {Environment.NewLine}" +
-                                              $" {ex.Message}");
+                            
 
+                            // Attempt to upload the image to instagram.
+                            try
+                            {
+                                instagramClient.PostImage(filePath);
+                                Console.WriteLine($"Successfully uploaded {filePath}" +
+                                                  $" {Environment.NewLine}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"Unable to upload {filePath}" +
+                                                  $" {Environment.NewLine}" +
+                                                  $" {ex.Message}");
+                            }
                         }
-
+                        
                         // Attempt to logout
                         try
                         {
@@ -115,6 +109,7 @@ namespace InstaFamous.Components
                                               $" {ex.Message}");
                         }
 
+                        // Sleep 6 hours
                         System.Threading.Thread.Sleep(216 * 100000);
                     }
 
@@ -227,6 +222,10 @@ namespace InstaFamous.Components
             }
         }
 
+        /// <summary>
+        /// Clears the working directory
+        /// </summary>
+        /// <param name="directoryName"></param>
         private void EmptyDirectory(string directoryName)
         {
             var images = Directory.EnumerateFiles(directoryName);
@@ -242,6 +241,28 @@ namespace InstaFamous.Components
                                       $" {Environment.NewLine}" +
                                       $" {ex.Message}");
                 }
+            }
+        }
+
+        /// <summary>
+        /// Attempts to login to instagram
+        /// </summary>
+        /// <param name="instagramClient"></param>
+        /// <returns></returns>
+        private bool LoginInstagram(InstagramClient instagramClient)
+        {
+            // Attempt to login
+            try
+            {
+                instagramClient.Login();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Unable to login to instagram account of {BotName}" +
+                                  $" {Environment.NewLine}" +
+                                  $" {ex.Message}");
+                return false;
             }
         }
     }
