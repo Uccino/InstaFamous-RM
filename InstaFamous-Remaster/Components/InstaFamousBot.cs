@@ -83,14 +83,17 @@ namespace InstaFamous.Components
                             try
                             {
                                 instagramClient.PostImage(filePath);
-                                Console.WriteLine($"Successfully uploaded {filePath}" +
-                                                  $" {Environment.NewLine}");
+                                InstaFamousLogger.LogMessage($"Succesfully uploaded {filePath}",
+                                    InstaFamousLogger.LogLevel.INFO,
+                                    BotName);
                             }
                             catch (Exception ex)
                             {
-                                Console.WriteLine($"Unable to upload {filePath}" +
-                                                  $" {Environment.NewLine}" +
-                                                  $" {ex.Message}");
+                                InstaFamousLogger.LogMessage($"Unable to upload {filePath}" +
+                                                             $" {Environment.NewLine}" +
+                                                             $" {ex.Message}",
+                                    InstaFamousLogger.LogLevel.INFO, 
+                                    BotName );
                             }
                         }
                         
