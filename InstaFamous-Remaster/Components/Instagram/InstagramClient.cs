@@ -30,7 +30,7 @@ namespace InstaFamous.Components.Instagram
             var delay = RequestDelay.FromSeconds(1, 3);
             InstaClient = InstaApiBuilder.CreateBuilder()
                 .SetUser(userSession)
-                .UseLogger(new DebugLogger(LogLevel.Exceptions))
+                .UseLogger(new DebugLogger(LogLevel.None))
                 .SetRequestDelay(delay)
                 .Build();
 
