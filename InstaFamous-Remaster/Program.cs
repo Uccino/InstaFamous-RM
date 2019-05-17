@@ -26,8 +26,8 @@ namespace InstaFamous
                         var newBot = new InstaFamousBot();
 
                         savedSettings.Add(setting);
-                        Thread newThread = new Thread(()=> newBot.Start(setting));
-                        newThread.Start();
+                        var newBotThread = new Thread(()=> newBot.Start(setting));
+                        newBotThread.Start();
                     }
                 }
 
