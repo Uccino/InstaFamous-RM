@@ -75,9 +75,7 @@ namespace InstaFamous.Components
             ImagesUploaded = 0;
 
             var botSettings = settings;
-
-            // Attempt to create a new directory
-            string directoryName = settings.Subreddit;
+            var directoryName = settings.Subreddit;
 
             var fileClient = new FileManager(directoryName);
 
@@ -86,23 +84,18 @@ namespace InstaFamous.Components
                 // Main bot loop
                 while (true)
                 {
-                    // Create new instance of reddit class
                     var redditClient = GetRedditClient(botSettings);
                     var instagramClient = GetInstagramClient(botSettings);
                     
-                    // Try to get the new reddit post
                     var redditPosts = redditClient.GetPosts();
                     redditPosts.ForEach(post => { DownloadFile(redditClient, post, directoryName); });
 
-                    // Get all of the items in the directory and convert the file types to jpg
                     var pngFilePaths = fileClient.GetPngImages();
                     pngFilePaths.ForEach(file => { ChangePictureFormat(fileClient, file); });
                    
-                    // Prepare the images for uploading
                     var filePaths = fileClient.GetImageList();
                     filePaths.ForEach(file => { PrepareImage(fileClient, file); });
                     
-                    // Loop through the images and upload them one by one
                     var instagramFiles = fileClient.GetImageList();
                     foreach (var filePath in instagramFiles)
                     {
@@ -161,7 +154,6 @@ namespace InstaFamous.Components
             var subreddit = redditSettings.Subreddit;
             var upvoteThreshold = redditSettings.UpvoteThreshold;
 
-            // Create new instance of the class
             var redditClient = new RedditClient(subreddit, upvoteThreshold);
 
             return redditClient;
@@ -179,7 +171,6 @@ namespace InstaFamous.Components
             var igPassword = instagramSettings.InstagramPassword;
             var igTags = instagramSettings.InstagramTags;
 
-            // Create new instance of the class
             var igClient = new InstagramClient(igUsername, igPassword, igTags);
 
             return igClient;
@@ -216,7 +207,6 @@ namespace InstaFamous.Components
         {
             try
             {
-
                 fileClient.ChangePictureFormat(file);
                 File.Delete(file);
 

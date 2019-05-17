@@ -32,28 +32,40 @@ namespace InstaFamous.Components.Reddit
 
             // Create a new list of Post classes 
             var postList = new List<Post>(25);
-            // Loop through all of the submissions in the JSON 
-            foreach (var post in redditSubmissions)
+            postList.ForEach(post =>
             {
-                var postTitle = post["data"]["title"].ToString();
-                var postScore = post["data"]["ups"].ToString();
-                var postUrl = post["data"]["url"].ToString();
-
-                // Create a new post instance
-                var redditPost = new Post();
-                redditPost.Title = postTitle;
-                redditPost.Score = int.Parse(postScore);
-                redditPost.Url = postUrl;
-                
-                // Add it to the list
+                var redditPost = ParsePost(post);
                 postList.Add(redditPost);
-            }
 
+            });
+            
             // Filter all of the posts and return it
             var filteredPosts = FilterPosts(postList);
             // Sort the list by amount of upvotes.
             filteredPosts = filteredPosts.OrderBy(p => p.Score).Reverse().Take(6).ToList();
             return filteredPosts;
+        }
+
+        /// <summary>
+        /// This function 
+        /// </summary>
+        /// <param name="post"></param>
+        /// <returns></returns>
+        private Post ParsePost(dynamic post)
+        {
+            var postTitle = post["data"]["title"].ToString();
+            var postScore = post["data"]["ups"].ToString();
+            var postUrl = post["data"]["url"].ToString();
+
+            // Create a new post instance
+            var redditPost = new Post
+            {
+                Title = postTitle,
+                Score = int.Parse(postScore),
+                Url = postUrl
+            };
+
+            return redditPost;
         }
 
         /// <summary>
@@ -147,18 +159,14 @@ namespace InstaFamous.Components.Reddit
         private List<Post> FilterPosts(List<Post> redditPosts)
         {
             var filteredList = new List<Post>();
-
-            foreach (var post in redditPosts)
+            redditPosts.ForEach(post =>
             {
-                // Only add the posts that have a certain amount of upvotes
                 if (post.Score >= UpvoteThreshold || (post.Url.Contains(".png") || post.Url.Contains(".jpg")))
                 {
                     filteredList.Add(post);
                 }
-            }
-
+            });
             return filteredList;
         }
-
     }
 }

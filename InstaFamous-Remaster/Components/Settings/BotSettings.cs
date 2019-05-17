@@ -16,7 +16,6 @@ namespace InstaFamous.Components.Settings
         public string InstagramUsername { get; private set; }
         public string InstagramPassword { get; private set; }
         public string InstagramTags { get; private set; }
-
         
         /// <summary>
         /// Sets the reddit settings

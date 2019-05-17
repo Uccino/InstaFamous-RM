@@ -26,21 +26,13 @@ namespace InstaFamous.Components.FileHandler
         /// <returns>True if setup was complete</returns>
         public bool Setup()
         {
-
             if (!Directory.Exists(WorkingDirectory))
             {
-                try
-                {
-                    Directory.CreateDirectory(WorkingDirectory);
-                    return true;
-                }
-                catch
-                {
-                    return false;
-                }
+                Directory.CreateDirectory(WorkingDirectory);
+                return true;
             }
 
-            return false;
+            return true;
         }
 
         /// <summary>
@@ -192,8 +184,7 @@ namespace InstaFamous.Components.FileHandler
                     graphics.Dispose();
                 }
                 img.Dispose();
-                //File.Delete(filePath);
-                //destinationImg.Save(filePath, ImageFormat.Jpeg);
+                
             }
         }
     }

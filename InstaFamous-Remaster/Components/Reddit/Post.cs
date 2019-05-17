@@ -9,23 +9,10 @@ namespace InstaFamous.Components.Reddit
 {
     class Post
     {
-        private string _url;
-        private int _score;
         private string _title;
 
-        public string Url
-        {
-            get => _url;
-            set => _url = value;
-        }
-
-        public int Score
-        {
-            get => _score;
-            set =>_score = value;
-            
-        }
-
+        public string Url { get; private set; }
+        public int Score { get; private set; }
         public string Title
         {
             get => _title;

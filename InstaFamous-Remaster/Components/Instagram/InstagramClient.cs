@@ -1,20 +1,18 @@
 ﻿using System;
 using System.Drawing;
 using System.IO;
-using System.Threading.Tasks;
 using InstagramApiSharp.API;
 using InstagramApiSharp.API.Builder;
 using InstagramApiSharp.Classes;
 using InstagramApiSharp.Classes.Models;
 using InstagramApiSharp.Logger;
 
-
 namespace InstaFamous.Components.Instagram
 {
     class InstagramClient
     {
-        private IInstaApi InstaClient;
-        private string instagramTags;
+        private readonly IInstaApi InstaClient;
+        private readonly string instagramTags;
 
         public InstagramClient(string username, string password, string tags)
         {
@@ -36,33 +34,38 @@ namespace InstaFamous.Components.Instagram
 
         }
 
+        /// <summary>
+        /// Logs the user in to instagram
+        /// </summary>
+        /// <returns></returns>
         public bool Login()
         {
-            var loginResult = Task.Run(() => InstaClient.LoginAsync().Result);
-            if (loginResult.Result.Succeeded && InstaClient.IsUserAuthenticated)
-            {
-                return true;
-            }
+            var loginResult = InstaClient.LoginAsync().Result;
 
-            return false;
+            return loginResult.Succeeded;
         }
 
+        /// <summary>
+        /// Logout the user from instagram
+        /// </summary>
+        /// <returns></returns>
         public bool Logout()
         {
-            if (!InstaClient.IsUserAuthenticated)
+            if (InstaClient.IsUserAuthenticated)
             {
-                var logoutResult = Task.Run(() => InstaClient.LogoutAsync().Result);
-                if (logoutResult.Result.Succeeded && !InstaClient.IsUserAuthenticated)
-                {
-                    return true;
-                }
+                var logoutResult = InstaClient.LogoutAsync().Result;
+                return logoutResult.Succeeded;
             }
 
-            return false;
+            return true;
+
         }
-
-
-
+        
+        /// <summary>
+        /// Attempts to upload an image to instagram
+        /// </summary>
+        /// <param name="filePath"></param>
+        /// <returns></returns>
         public bool PostImage(string filePath)
         {
             var captionTags = instagramTags;
@@ -75,38 +78,21 @@ namespace InstaFamous.Components.Instagram
             {
                 Height = igImage.Height,
                 Width = igImage.Width,
-                ImageBytes = GetImageBytes(filePath),
+                ImageBytes = File.ReadAllBytes(filePath),
                 Uri = filePath
             };
 
             if (InstaClient.IsUserAuthenticated)
             {
-                var uploadResult = Task.Run(async () => await InstaClient.MediaProcessor.UploadPhotoAsync(mediaImage, instagramCaption));
-                Console.WriteLine(uploadResult.Result.Info);
+                var uploadResult = InstaClient.MediaProcessor.UploadPhotoAsync(mediaImage, instagramCaption).Result;
                 igImage.Dispose();
-                if (uploadResult.Result.Succeeded)
+                if (uploadResult.Succeeded)
                 {
-                    igImage.Dispose();
                     return true;
                 }
-
             }
-            igImage.Dispose();
+
             return false;
-        }
-
-        private byte[] GetImageBytes(string filePath)
-        {
-            using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
-            {
-                // Create a byte array of file stream length
-                byte[] bytes = System.IO.File.ReadAllBytes(filePath);
-                //Read block of bytes from stream into the byte array
-                fs.Read(bytes, 0, System.Convert.ToInt32(fs.Length));
-                //Close the File Stream
-                fs.Close();
-                return bytes; //return the byte data
-            }
         }
     }
 }
